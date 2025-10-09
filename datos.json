@@ -1,0 +1,14 @@
+{
+    "usuarios": {
+        "Pedrito": {
+            "nombre": "Pedrito"
+        },
+        "Juan": {
+            "nombre": "Juan"
+        },
+        "Salvio": {
+            "nombre": "Salvio"
+        }
+    },
+    "productos": {}
+}
