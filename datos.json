@@ -1,14 +1,53 @@
 {
-    "usuarios": {
-        "Pedrito": {
-            "nombre": "Pedrito"
+    "usuarios": [
+        {
+            "id": 1,
+            "nombre": "Pedrito",
+            "creado_en": "2025-10-12 21:31:03"
         },
-        "Juan": {
-            "nombre": "Juan"
-        },
-        "Salvio": {
-            "nombre": "Salvio"
+        {
+            "id": 2,
+            "nombre": "Yuba",
+            "creado_en": "2025-10-12 21:38:53"
         }
-    },
-    "productos": {}
+    ],
+    "productos": [
+        {
+            "id": 1,
+            "nombre": "Monster Energy",
+            "cantidad": 230.0,
+            "precio": 2500.0,
+            "categoria": "Bebida Energetica",
+            "descripcion": "Lata 200ml ",
+            "creado_en": "2025-10-12 21:39:37"
+        },
+        {
+            "id": 2,
+            "nombre": "Red Bull",
+            "cantidad": 200.0,
+            "precio": 1000.0,
+            "categoria": "Bebida Energetica",
+            "descripcion": "Lata 100ml",
+            "creado_en": "2025-10-12 21:40:48"
+        },
+        {
+            "id": 3,
+            "nombre": "Papas Fritas Lays",
+            "cantidad": 300.0,
+            "precio": 1200.0,
+            "categoria": "Snacks",
+            "descripcion": "Paquete papas fritas Lays ",
+            "creado_en": "2025-10-12 21:41:36"
+        },
+        {
+            "id": 4,
+            "nombre": "Jack Daniels",
+            "cantidad": 40.0,
+            "precio": 25000.0,
+            "categoria": "Whisky",
+            "descripcion": "Botella Whisky Jack daniels 200",
+            "creado_en": "2025-10-12 21:42:12"
+        }
+    ],
+    "contabilidad": []
 }

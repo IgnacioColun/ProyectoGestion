@@ -1,11 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
-from datos import cargar_datos, agregar_producto_diccion, actualizar_producto_diccion, eliminar_producto_diccion
+from datos import cargar_datos, guardar_datos, agregar_producto_diccion, actualizar_producto_diccion, eliminar_producto_diccion, obtener_lista_productos
 from generador_excel import exportar_lista_a_excel
 
-def abrir_productos(usuario_actual, ventana_principal):
-    ventana_principal.withdraw()
-    ventana = tk.Toplevel()
+def abrir_productos(usuario_actual, raiz):
+    ventana = tk.Toplevel(raiz)
     ventana.title("Inventario")
     ventana.geometry("820x520")
     ventana.config(bg="#f3f4f6")
@@ -52,11 +51,13 @@ def abrir_productos(usuario_actual, ventana_principal):
     ttk.Button(botones, text="Editar", command=lambda: editar()).pack(side="left", padx=4)
     ttk.Button(botones, text="Eliminar", command=lambda: eliminar()).pack(side="left", padx=4)
     ttk.Button(botones, text="Exportar todos a Excel", command=lambda: exportar_todos()).pack(side="right", padx=4)
+    ttk.Button(botones, text="Exportar y limpiar tabla", command=lambda: exportar_y_limpiar()).pack(side="right", padx=4)
 
     def refrescar():
-        for r in tabla.get_children(): tabla.delete(r)
-        for p in cargar_datos()["productos"]:
-            tabla.insert("", "end", values=(p["id"], p["nombre"], p["cantidad"], p["precio"], p.get("categoria","")))
+        tabla.delete(*tabla.get_children())
+        datos_loc = cargar_datos()
+        for p in datos_loc.get("productos", []):
+            tabla.insert("", "end", values=(p.get("id"), p.get("nombre"), p.get("cantidad"), p.get("precio"), p.get("categoria","")))
 
     def agregar():
         nombre = entrada_nombre.get().strip()
@@ -69,7 +70,8 @@ def abrir_productos(usuario_actual, ventana_principal):
         except:
             messagebox.showwarning("Aviso", "Cantidad/Precio inválido")
             return
-        agregar_producto_diccion(cargar_datos(), nombre, cantidad, precio, entrada_categoria.get(), entrada_desc.get())
+        datos_loc = cargar_datos()
+        agregar_producto_diccion(datos_loc, nombre, cantidad, precio, entrada_categoria.get(), entrada_desc.get())
         entrada_nombre.delete(0, "end"); entrada_cantidad.delete(0, "end"); entrada_precio.delete(0, "end")
         entrada_categoria.delete(0, "end"); entrada_desc.delete(0, "end")
         refrescar()
@@ -81,21 +83,22 @@ def abrir_productos(usuario_actual, ventana_principal):
             return
         vals = tabla.item(sel[0])["values"]
         prod_id = vals[0]
-        p = next((x for x in cargar_datos()["productos"] if x["id"] == prod_id), None)
+        datos_loc = cargar_datos()
+        p = next((x for x in datos_loc["productos"] if x.get("id")==prod_id), None)
         if not p:
             messagebox.showwarning("Aviso", "Producto no encontrado")
             return
-        nuevo_nombre = simpledialog.askstring("Editar", "Nombre:", initialvalue=p["nombre"], parent=ventana)
+        nuevo_nombre = simpledialog.askstring("Editar", "Nombre:", initialvalue=p.get("nombre",""), parent=ventana)
         if nuevo_nombre is None: return
         try:
-            nueva_cant = float(simpledialog.askstring("Editar", "Cantidad:", initialvalue=str(p["cantidad"]), parent=ventana) or p["cantidad"])
-            nuevo_prec = float(simpledialog.askstring("Editar", "Precio:", initialvalue=str(p["precio"]), parent=ventana) or p["precio"])
+            nueva_cant = float(simpledialog.askstring("Editar", "Cantidad:", initialvalue=str(p.get("cantidad",0)), parent=ventana) or p.get("cantidad",0))
+            nuevo_prec = float(simpledialog.askstring("Editar", "Precio:", initialvalue=str(p.get("precio",0)), parent=ventana) or p.get("precio",0))
         except:
             messagebox.showwarning("Aviso", "Cantidad/Precio inválido")
             return
         nueva_cat = simpledialog.askstring("Editar", "Categoría:", initialvalue=p.get("categoria",""), parent=ventana) or ""
         nueva_desc = simpledialog.askstring("Editar", "Descripción:", initialvalue=p.get("descripcion",""), parent=ventana) or ""
-        actualizar_producto_diccion(cargar_datos(), prod_id, nuevo_nombre, nueva_cant, nuevo_prec, nueva_cat, nueva_desc)
+        actualizar_producto_diccion(datos_loc, prod_id, nuevo_nombre, nueva_cant, nuevo_prec, nueva_cat, nueva_desc)
         refrescar()
 
     def eliminar():
@@ -106,23 +109,28 @@ def abrir_productos(usuario_actual, ventana_principal):
         vals = tabla.item(sel[0])["values"]
         prod_id = vals[0]
         if messagebox.askyesno("Confirmar", "Eliminar producto?"):
-            eliminar_producto_diccion(cargar_datos(), prod_id)
+            datos_loc = cargar_datos()
+            eliminar_producto_diccion(datos_loc, prod_id)
             refrescar()
 
     def exportar_todos():
-        productos = cargar_datos()["productos"]
+        productos = cargar_datos().get("productos", [])
         if not productos:
             messagebox.showwarning("Aviso", "No hay productos")
             return
-        productos_sin_usuario = []
-        for p in productos:
-            copia = {k: v for k, v in p.items() if k != "usuario"}
-            productos_sin_usuario.append(copia)
+        productos_sin_usuario = [{k:v for k,v in p.items() if k!="usuario"} for p in productos]
         ruta = exportar_lista_a_excel(productos_sin_usuario, "productos_export", hoja_nombre="productos", metadata={"Generado_por": usuario_actual.get("nombre","")})
         messagebox.showinfo("Exportado", f"Exportado a:\n{ruta}")
 
+    def exportar_y_limpiar():
+        exportar_todos()
+        datos_loc = cargar_datos()
+        datos_loc["productos"] = []
+        guardar_datos(datos_loc)
+        refrescar()
+
     def volver():
         ventana.destroy()
-        ventana_principal.deiconify()
+        raiz.deiconify()
 
     refrescar()
